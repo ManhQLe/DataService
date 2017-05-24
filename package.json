@@ -1,0 +1,17 @@
+{
+  "name": "data-service",
+  "version": "0.0.0",
+  "description": "DataService",
+  "main": "main.js",
+  "author": {
+    "name": "Manh Le"
+  },
+  "dependencies": {
+    "async8": "^0.1.11",
+    "ctrl8": "0.0.9",
+    "express": "^4.15.2",
+    "moment": "^2.18.1",
+    "url-pattern": "^1.0.3",
+    "uws": "^0.14.5"
+  }
+}

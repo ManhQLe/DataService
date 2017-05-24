@@ -1,0 +1,50 @@
+<html>
+
+<head>
+    <link href="app.css?ver=1.0" rel="stylesheet" />
+    <script type="text/javascript" src="/Resources/JS/jquery-3.2.1.min.js"></script>
+</head>
+
+<body>
+    <div class="CHAT" style="height:350px;">
+        <div class="MESSAGES" style="width: 70%" id="MBOX"></div>
+        <div class="USERS" style="width: 30%"></div>
+    </div>
+    <input style="width:99%" id="CHAT" />
+    <script>
+        var ws = new WebSocket("ws://localhost:3000/Realtime/Ping");
+        ws.onopen = function () {
+            console.log("Connected");
+        }
+
+        ws.onmessage = function (evt) {
+            var data = evt.data;
+            WriteMessage(data);
+        }
+
+        ws.onclose = function () {
+            console.log("End");
+        }
+
+        function WriteMessage(m) {
+            var div = document.createElement("div");
+            div.textContent = m;
+            div.setAttribute("class", "MESSAGE");
+            var B = document.getElementById("MBOX")
+            B.appendChild(div);
+            B.scrollTop = B.scrollHeight;
+        }
+
+        $("#CHAT").on("keydown", function (e) {
+            if (e.keyCode == 13) {
+                var m = this.value.trim();
+                this.value = "";
+                if (m.length)
+                    ws.send(m);
+            }
+        })
+    </script>
+
+</body>
+
+</html>

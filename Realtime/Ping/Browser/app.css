@@ -1,0 +1,29 @@
+body{
+    font-family: "SegoeUI"    
+}
+
+.CHAT{
+    display:flex;        
+}
+.CHAT > div.USERS {
+    padding: 3px;
+}
+
+
+.CHAT > div.MESSAGES > MESSAGE[me]{
+    background-color: forestgreen;
+}
+
+.MESSAGES {
+    font-family:'Segoe UI';
+    border:1px solid #808080;
+    overflow-y:auto;
+}
+.MESSAGE {
+    background-color:#F0F0F0;
+    padding:5px;
+}
+
+    .MESSAGE + .MESSAGE {
+        margin-top:3px;
+    }

@@ -1,0 +1,178 @@
+<html>
+
+<head>
+    <script src="/Resources/JS/jquery-3.2.1.min.js" type="text/javascript"></script>
+    <script src="/Resources/JS/d3.v4.min.js" type="text/javascript"></script>
+    <script src="/Resources/JS/d3-selection-multi.v1.min.js" type="text/javascript"></script>
+    <script src="/Resources/JS/moment.min.js" type="text/javascript"></script>
+    <link rel='stylesheet' href='app.css?v=2.0'>
+    <script src="../../../Resources/JS/Ctrl8.min.js"></script>
+    <script src="../../../Resources/JS/RTBase.js"></script>
+    <script src="Renderer.js"></script>
+</head>
+
+<body>
+    <div style="display:inline-flex">
+        <div style="display:inline-block">
+            <div>
+                <svg id="CANVAS" class="CANVAS" style="overflow:hidden">
+                    <g>
+                        <text class="TEXT"></text>
+                    </g>
+                </svg>
+            </div>
+            <textarea id="CHATBOX" style="width:800px;height:80px"></textarea>
+        </div>
+        <div style="width:260px;border:1px solid #F0F0F0;overflow:hidden">
+            <ul class="RFC-COMMENTS-LIST"></ul>
+        </div>
+    </div>
+    <template id="RFC-COMMENT-TEMPLATE">
+        <div class="RFC-COMMENTS">
+            <div class="HEAD">
+                <img class="USERPROF" />
+                <div class="INFO">
+                    <div class="USERNAME"></div>
+                    <div class="COMMENT-DATE"></div>
+                </div>
+            </div>
+            <div class="COMMENTS"></div>
+        </div>
+    </template>
+    <script>
+
+        function Perf(Init) {
+            Perf.baseConstructor.call(this, Init);            
+        }
+        RTBase.ExtendsTo(Perf);
+
+      
+        var W = 800;
+        var H = 300;
+        var MAXPOINT = 62;
+        var DUR = 300;
+        var EasingFx = d3.easeSinInOut;
+        d3.select("#CANVAS")
+            .style("width", W + "px")
+            .style("height", H + "px")
+
+
+
+        var CPUData = []
+
+        var color = d3.scaleLinear()
+            .domain([0, 25, 50, 75, 100])
+            //.range(["red", "yellow","white", ])
+            .range(["black", "purple", "red", "yellow", "white",])
+
+        var y = d3.scaleLinear()
+            .domain([0, 100])
+            .range([H, 0]);
+
+        var x = d3.scaleLinear()
+            .domain([0, MAXPOINT - 1])
+            .range([0, W])
+
+        
+
+
+        function Update(Data) {
+            var CPUs = Data.CPUs
+            CPUData.push(CPUs.reduce(function (a, b) {
+                return a + b;
+            }, 0) / CPUs.length);
+            CPUData.length > MAXPOINT ? CPUData.splice(0, CPUData.length - MAXPOINT) : 1;
+
+        }
+
+
+        var Attr = {
+            "class": "POINT",
+            "cx": function (d, i) {
+                return x(i);
+            },
+            "cy": function (d, i) {
+                return y(d);
+            },
+            "fill": function (d) {
+                return color(d)
+            },
+            "r": 3
+        }
+
+        function Draw() {
+
+            var G = d3.select("#CANVAS > g");
+            var D3Data = G.selectAll("circle.POINT")
+                .data(CPUData)
+            //easeQuadIn                    
+            D3Data.transition().duration(DUR).ease(EasingFx).attrs(Attr);
+            D3Data.enter().append("circle")
+                .attrs(Attr)
+
+            D3Data.exit().remove();
+
+            if (CPUData.length) {
+                var val = CPUData[CPUData.length - 1]
+                d3.select("#CANVAS > g > text.TEXT")
+                    .transition().duration(DUR).ease(EasingFx)
+                    .attrs({
+                        "x": x(CPUData.length - 1),
+                        "y": y(val),
+                        "text-anchor": "end",
+                        "stroke": color(val),
+                        "dx": -10
+                    })
+                    .text("CPU:" + d3.format(".1f")(val) + "%");
+            }
+
+            requestAnimationFrame(Draw);
+        }
+
+        $("#CHATBOX").on("keydown", function (e) {
+
+            if (e.keyCode == 13) {
+                if (e.altKey) {
+                    this.value += "\n";
+                }
+                else {
+                    var val = this.value;
+                    if (val.length) {
+                        this.value = "";
+                        MyApp.SendMessage("Chat", val);                        
+                    }
+                    e.preventDefault();
+                }
+            }
+
+        })
+
+        var MyApp = new Perf({
+            "AppUrl": "/Realtime/Perf",
+            "OnOpen": function (ws) {
+                console.log("Connected");
+            },
+            "OnMessageError": function (err) {
+                console.log(err)
+            },
+            "OnClose": function (ws) {
+                console.log("Close")
+            }
+        });
+
+        MyApp.On("Performance", function (data) {
+            Update(data);
+        })
+
+        MyApp.On("Chat", function (data) {
+            console.log("Chat")
+            console.log(data);
+            Renderer.RenderComments(data);
+        })
+
+        Draw();
+
+    </script>
+</body>
+
+</html>

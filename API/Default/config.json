@@ -1,0 +1,22 @@
+{
+  "DBConnections": {
+    "Conn1": {"This": "is connection" }
+  },
+  "Services": {
+    "One": {
+      "Logic": "",
+      "Def": {
+        "Connections": [ "Conn1", "Conn2" ],
+        "Parameters": {
+          "X": "Number",
+          "Y": "Int",
+          "Z": "String",
+          "W": "Boolean"
+        },
+        "Props": {
+          "Prop1": "Prop2"
+        }
+      }
+    }
+  }
+}
